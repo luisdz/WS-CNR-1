@@ -3,38 +3,52 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.JSONObject;
 
 import sv.gob.cnr.comerciows.recievedata.DBOracle;
 public class Catalogos 
 {
 
-	public String getDepartamento(String code) throws IOException
+	public String getDepartamento(String code)  throws IOException 
 	{
-		String result="06"; 
-		
-		
-		File f = new File("src/x.txt");
-		 
-		BufferedReader reader = new BufferedReader(new FileReader("NODES.txt"));
-		String json = "";
-		try {
-		    StringBuilder sb = new StringBuilder();
-		    String line = reader.readLine();
-
-		    while (line != null) {
-		        sb.append(line);
-		        sb.append("\n");
-		        line = reader.readLine();
-		    }
-		    json = sb.toString();
-		} finally {
-		    reader.close();
-		}
-		
-		
-		
+		String result="06"; 	 
+	    InputStream s =Catalogos.class.getResourceAsStream("/catalogo.txt");  	    
+	    BufferedReader br = new BufferedReader(new InputStreamReader(s));
+	    String content = br.readLine();	    
+	    JSONObject jsonObject =new JSONObject(content);
+	    JSONObject jsonDep= jsonObject.getJSONObject("province");
+	    result=jsonDep.getString(code);	 
+		return result;
+	}
+	public String getSexo(String code)  throws IOException 
+	{
+		String result="06"; 	 
+	    InputStream s =Catalogos.class.getResourceAsStream("/catalogo.txt");  	    
+	    BufferedReader br = new BufferedReader(new InputStreamReader(s));
+	    String content = br.readLine();	    
+	    JSONObject jsonObject =new JSONObject(content);
+	    JSONObject jsonDep= jsonObject.getJSONObject("sex");
+	    result=jsonDep.getString(code);	 
+		return result;
+	}
+	public String getMunicipio(String code)  throws IOException 
+	{
+		String result="06"; 	 
+	    InputStream s =Catalogos.class.getResourceAsStream("/catalogo.txt");  	    
+	    BufferedReader br = new BufferedReader(new InputStreamReader(s));
+	    String content = br.readLine();	    
+	    JSONObject jsonObject =new JSONObject(content);
+	    JSONObject jsonDep= jsonObject.getJSONObject("town");
+	    result=jsonDep.getString(code);	 
 		return result;
 	}
 	public String matchDepartamento(String code)

@@ -53,13 +53,14 @@ public class Data {
 	
 	// service de prueba
 	
-	public String test( String param) {
+	public String test( String param) throws IOException {
 		
 		Boolean mat=false;
 		Boolean cons=false;
 		Boolean bal=false;
 		Boolean otro=false;
 		String res="error";
+		String test="";
 		if(isJSONValid(param))
 		{
 		JSONObject jsonObjectGlobal = new JSONObject(param);
@@ -68,18 +69,18 @@ public class Data {
 		
 		try{ 
 			//crear usuario
-			int idU=crearUser(user); 
+			int idU=1;
+				//idU=crearUser(user); 
 			 
 				//constitucion
-				int idP=crearPresentacion(param,idU,"002");
+				int idP=0;
+			    //idP=crearPresentacion(param,idU,"002");
 				System.out.println("presentacion");
-				crearPreForma(param,idP,idU,"constitucionXML");
+				//crearPreForma(param,idP,idU,"constitucionXML");
+				test=crearPreForma(param,0,idU,"constitucionXML");
 				System.out.println("forma");
-				crearAnexo(idP, idU,"constitucion",param);
-				crearAnexo(idP, idU,"matricula",param);
-				//matricula 
-				//idP=crearPresentacion(param,idU,"002");
-				//crearPreForma(param,idP,idU,"matriculaXML");
+				//crearAnexo(idP, idU,"constitucion",param);
+				//crearAnexo(idP, idU,"matricula",param); 
 				//crearAnexo(idP, idU);
 			 			
 			//balance
@@ -101,7 +102,13 @@ public class Data {
 			 newjSON.put("status", "invalid JSON");
 			 res=  newjSON.toString();
 		 }
-		return res;
+		//
+		
+		//
+		//return res;
+		Catalogos cat = new Catalogos();
+		cat.getDepartamento("townSanSalvador");
+		return test;
 	}
 	
 	 
@@ -261,7 +268,7 @@ public class Data {
 	}
 	
 	//crear pre forma
-	private int crearPreForma(String param,int idpre, int idU, String titulo)
+	private String crearPreForma(String param,int idpre, int idU, String titulo)
 	{		 
 		Boolean a=true;
 		String strxml="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
@@ -282,7 +289,9 @@ public class Data {
 		//XML constitucion
 		//XML balance
 		//validar si existe
-		try
+		
+		
+		/*try
 		{
 			resultado=consultar("select CNT_VALOR as c from ECNR_OW.contador where cnt_nombre='FOR_ID'");		
 			resultado.next();
@@ -309,8 +318,8 @@ public class Data {
 		catch(Exception e)
 		{
 			int r=0;
-		}
-		return idpre;
+		}return idpre;*/
+		return strxml;
 	}
 	
 	//crear anexos
