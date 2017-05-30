@@ -70,17 +70,17 @@ public class Data {
 		try{ 
 			//crear usuario
 			int idU=1;
-				//idU=crearUser(user); 
+				idU=crearUser(user); 
 			 
 				//constitucion
 				int idP=0;
-			    //idP=crearPresentacion(param,idU,"002");
+			    idP=crearPresentacion(param,idU,"002");
 				System.out.println("presentacion");
 				//crearPreForma(param,idP,idU,"constitucionXML");
 				test=crearPreForma(param,0,idU,"constitucionXML");
 				System.out.println("forma");
-				//crearAnexo(idP, idU,"constitucion",param);
-				//crearAnexo(idP, idU,"matricula",param); 
+				crearAnexo(idP, idU,"constitucion",param);
+				crearAnexo(idP, idU,"matricula",param); 
 				//crearAnexo(idP, idU);
 			 			
 			//balance
@@ -104,11 +104,11 @@ public class Data {
 		 }
 		//
 		
-		//
-		//return res;
-		Catalogos cat = new Catalogos();
+		//Catalogos cat = new Catalogos();
+		return res;
+		
 		 
-		return test;
+		//return test;
 	}
 	
 	 
