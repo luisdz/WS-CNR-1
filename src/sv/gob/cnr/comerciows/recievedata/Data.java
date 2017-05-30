@@ -107,7 +107,7 @@ public class Data {
 		//
 		//return res;
 		Catalogos cat = new Catalogos();
-		cat.getDepartamento("townSanSalvador");
+		 
 		return test;
 	}
 	
@@ -268,7 +268,7 @@ public class Data {
 	}
 	
 	//crear pre forma
-	private String crearPreForma(String param,int idpre, int idU, String titulo)
+	private String crearPreForma(String param,int idpre, int idU, String titulo) throws JSONException, IOException
 	{		 
 		Boolean a=true;
 		String strxml="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
@@ -565,8 +565,10 @@ public class Data {
 	 
 	
 	//genera formato de informacion general para pre_forma
-	private JSONObject generalXML(String p)
-	{		
+	private JSONObject generalXML(String p) throws JSONException, IOException
+	{	
+
+		Catalogos catalogo= new Catalogos();
 		JSONObject jsonObject = new JSONObject(p);
 		JSONObject jsonObjectRes = new JSONObject();
 		JSONObject servObj = new JSONObject();
@@ -602,8 +604,11 @@ public class Data {
 			{
 				dirNJson.append("complemento", dir.getString("complement"));
 			}
-			dirNJson.append("departamento", dir.getString("province"));
-			dirNJson.append("municipio", dir.getString("town"));
+			//String code=catalogo.getDepartamento(dir.getString("province"));
+			String code=catalogo.getDepartamento("provinceSanSalvador");
+			dirNJson.append("departamento", code); 
+			code=catalogo.getMunicipio("townApaneca");
+			dirNJson.append("municipio", code); 
 			dirNJson.append("telefono", dir.getString("phone")); 
 			if(dir.has("mobile"))
 			{

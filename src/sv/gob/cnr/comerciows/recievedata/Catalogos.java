@@ -20,33 +20,51 @@ public class Catalogos
 
 	public String getDepartamento(String code)  throws IOException 
 	{
-		String result="06"; 	 
+		String result="06"; 
+		String json = "";
 	    InputStream s =Catalogos.class.getResourceAsStream("/catalogo.txt");  	    
 	    BufferedReader br = new BufferedReader(new InputStreamReader(s));
-	    String content = br.readLine();	    
-	    JSONObject jsonObject =new JSONObject(content);
+	    String content = "";	 
+	    while ((content = br.readLine()) != null) {
+	        // buffer.append(line);
+	    	json += content;
+	    }	    
+	    
+	    JSONObject jsonObject =new JSONObject(json);
 	    JSONObject jsonDep= jsonObject.getJSONObject("province");
 	    result=jsonDep.getString(code);	 
 		return result;
 	}
 	public String getSexo(String code)  throws IOException 
 	{
-		String result="06"; 	 
+		String result="06"; 
+		String json = "";
 	    InputStream s =Catalogos.class.getResourceAsStream("/catalogo.txt");  	    
 	    BufferedReader br = new BufferedReader(new InputStreamReader(s));
-	    String content = br.readLine();	    
-	    JSONObject jsonObject =new JSONObject(content);
+	    String content = "";	 
+	    while ((content = br.readLine()) != null) {
+	        // buffer.append(line);
+	    	json += content;
+	    }	    
+	    
+	    JSONObject jsonObject =new JSONObject(json);
 	    JSONObject jsonDep= jsonObject.getJSONObject("sex");
 	    result=jsonDep.getString(code);	 
 		return result;
 	}
 	public String getMunicipio(String code)  throws IOException 
 	{
-		String result="06"; 	 
+		String result="06"; 
+		String json = "";
 	    InputStream s =Catalogos.class.getResourceAsStream("/catalogo.txt");  	    
 	    BufferedReader br = new BufferedReader(new InputStreamReader(s));
-	    String content = br.readLine();	    
-	    JSONObject jsonObject =new JSONObject(content);
+	    String content = "";	 
+	    while ((content = br.readLine()) != null) {
+	        // buffer.append(line);
+	    	json += content;
+	    }	    
+	    
+	    JSONObject jsonObject =new JSONObject(json);
 	    JSONObject jsonDep= jsonObject.getJSONObject("town");
 	    result=jsonDep.getString(code);	 
 		return result;
