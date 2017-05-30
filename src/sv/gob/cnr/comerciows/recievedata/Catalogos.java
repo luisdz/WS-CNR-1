@@ -20,7 +20,7 @@ public class Catalogos
 
 	public String getDepartamento(String code)  throws IOException 
 	{
-		String result="06"; 
+		String result="14"; 
 		String json = "";
 	    InputStream s =Catalogos.class.getResourceAsStream("/catalogo.txt");  	    
 	    BufferedReader br = new BufferedReader(new InputStreamReader(s));
@@ -36,7 +36,7 @@ public class Catalogos
 	}
 	public String getSexo(String code)  throws IOException 
 	{
-		String result="06"; 
+		String result="H"; 
 		String json = "";
 	    InputStream s =Catalogos.class.getResourceAsStream("/catalogo.txt");  	    
 	    BufferedReader br = new BufferedReader(new InputStreamReader(s));
@@ -52,7 +52,7 @@ public class Catalogos
 	}
 	public String getMunicipio(String code)  throws IOException 
 	{
-		String result="06"; 
+		String result="0614"; 
 		String json = "";
 	    InputStream s =Catalogos.class.getResourceAsStream("/catalogo.txt");  	    
 	    BufferedReader br = new BufferedReader(new InputStreamReader(s));
