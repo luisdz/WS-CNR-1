@@ -20,7 +20,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.imageio.ImageIO; 
+import javax.imageio.ImageIO;
+import javax.jws.WebMethod;
 import javax.jws.WebService;
 
 import org.json.JSONArray;
@@ -52,8 +53,11 @@ import com.sun.javafx.binding.StringFormatter;
 public class Data {
 	
 	// service de prueba
+	private List<String> L_errores;
+	private String errores;
 	
-	public String test( String param) throws IOException {
+	@WebMethod
+	public String crearSolicitud( String param) throws IOException {
 		
 		Boolean mat=false;
 		Boolean cons=false;
@@ -64,27 +68,29 @@ public class Data {
 		if(isJSONValid(param))
 		{
 		JSONObject jsonObjectGlobal = new JSONObject(param);
-		String user = "miempresa.gob.sv";//jsonObjectGlobal.getString("user");
-		JSONArray jsonA = jsonObjectGlobal.getJSONObject("request").getJSONArray("registrations");
-		
-		try{ 
+		String user = "miempresa.gob.sv";
+		try{
+			//user=jsonObjectGlobal.getString("user");
+		}
+		catch(Exception e){
+			errores+="error al obtener user";
+		}		
+		//JSONArray jsonA = jsonObjectGlobal.getJSONObject("request").getJSONArray("registrations");
+		try
+		{ 
 			//crear usuario
 			int idU=1;
-				idU=crearUser(user); 
-			 
-				//constitucion
-				int idP=0;
-			    idP=crearPresentacion(param,idU,"002");
-				System.out.println("presentacion");
-				//crearPreForma(param,idP,idU,"constitucionXML");
-				test=crearPreForma(param,0,idU,"constitucionXML");
-				System.out.println("forma");
-				crearAnexo(idP, idU,"constitucion",param);
-				crearAnexo(idP, idU,"matricula",param); 
-				//crearAnexo(idP, idU);
-			 			
-			//balance
-			res= "" + idU;
+			//idU=crearUser(user);  
+			int idP=0;
+		    //idP=crearPresentacion(param,idU,"002");
+			System.out.println("presentacion");
+			//crearPreForma(param,idP,idU,"constitucionXML");
+			test=crearPreForma(param,0,idU,"constitucionXML");
+			System.out.println("forma");
+			//crearAnexo(idP, idU,"constitucion",param);//anexo constitucion
+			//crearAnexo(idP, idU,"matricula",param); //anexo balance
+			//crearAnexo(idP, idU);			
+			res= "" + idU;//response
 			String idSol = jsonObjectGlobal.get("id").toString();
 			JSONObject newjSON= new JSONObject();
 			newjSON.put("id", idSol);
@@ -92,27 +98,27 @@ public class Data {
 			newjSON.put("status", "recieved");
 			res=  newjSON.toString();
 		}
-		catch (Exception e){
-			res="error: " + e;
+		catch (Exception e)
+			{
+			errores+= e;
+			 JSONObject newjSON= new JSONObject();
+			 newjSON.put("status", "error de ejecucion");
+			 newjSON.put("errors", errores);
+			 res=  newjSON.toString();
 			}
 		 }
 		 else
 		 {
 			 JSONObject newjSON= new JSONObject();
-			 newjSON.put("status", "invalid JSON");
+			 newjSON.put("status", "JSON incorrecto");
 			 res=  newjSON.toString();
-		 }
-		//
-		
-		//Catalogos cat = new Catalogos();
-		return res;
-		
+		 } 
 		 
+		return res;
 		//return test;
 	}
 	
 	 
-	
 	//ejecutar insert update delete
 	private String ejecutar(String sql) 
 		{
@@ -188,8 +194,10 @@ public class Data {
 				ejecutar("update ECNR_OW.ecnr_contadores set cnt_contador = " + idUser + " where cnt_tabla='USUARIOS'");
 							
 			}
-		} catch (SQLException e) {
+		} catch (SQLException e) 
+		{
 			// TODO Auto-generated catch block
+			errores+=" * Error al crear usuario";
 			e.printStackTrace();
 		}
 		return idUser;
@@ -284,10 +292,7 @@ public class Data {
 		xml=XML.toString(conJs,"constitucionXML");
 		strxml=strxml.concat(xml);
 		xml=XML.toString(matJs,"matriculaXML");
-		strxml=strxml.concat(xml);
-		//XML matricula
-		//XML constitucion
-		//XML balance
+		strxml=strxml.concat(xml); 
 		//validar si existe
 		
 		
@@ -562,8 +567,7 @@ public class Data {
 	    }
 	    return true;
 	}
-	 
-	
+		
 	//genera formato de informacion general para pre_forma
 	private JSONObject generalXML(String p) throws JSONException, IOException
 	{	

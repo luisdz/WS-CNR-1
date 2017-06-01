@@ -25,7 +25,8 @@ public class Catalogos
 	    InputStream s =Catalogos.class.getResourceAsStream("/catalogo.txt");  	    
 	    BufferedReader br = new BufferedReader(new InputStreamReader(s));
 	    String content = "";	 
-	    while ((content = br.readLine()) != null) { 
+	    while ((content = br.readLine()) != null) 
+	    { 
 	    	json += content;
 	    }	    
 	    
