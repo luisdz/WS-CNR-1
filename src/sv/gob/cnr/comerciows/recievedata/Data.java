@@ -85,11 +85,10 @@ public class Data {
 		    //idP=crearPresentacion(param,idU,"002");
 			System.out.println("presentacion");
 			//crearPreForma(param,idP,idU,"constitucionXML");
-			test=crearPreForma(param,0,idU,"constitucionXML");
-			System.out.println("forma");
+			test=crearPreForma(param,0,idU,"constitucionXML"); 
 			//crearAnexo(idP, idU,"constitucion",param);//anexo constitucion
-			//crearAnexo(idP, idU,"matricula",param); //anexo balance
-			//crearAnexo(idP, idU);			
+			//crearAnexo(idP, idU,"matricula",param); //anexo matricula
+			//crearAnexo(idP, idU,"balance",param);	//anexo balance		
 			res= "" + idU;//response
 			String idSol = jsonObjectGlobal.get("id").toString();
 			JSONObject newjSON= new JSONObject();
@@ -115,8 +114,7 @@ public class Data {
 		 }		 
 		return res;
 		//return test;
-	}
-	
+	}	
 	 
 	//ejecutar insert update delete
 	private String ejecutar(String sql) 
@@ -549,12 +547,7 @@ public class Data {
 	}
 	
 	//probar conexion
-	private String testConection()
-	{
-		DBOracle baseDatos = new DBOracle();
-        String res=baseDatos.conectar();
-        return res;
-	}
+	 
  	 
  	//validar formato json 
 	private boolean isJSONValid(String test) {
