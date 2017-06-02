@@ -99,21 +99,20 @@ public class Data {
 			res=  newjSON.toString();
 		}
 		catch (Exception e)
-			{
-			errores+= e;
+		{
+			 errores+= e;
 			 JSONObject newjSON= new JSONObject();
 			 newjSON.put("status", "error de ejecucion");
 			 newjSON.put("errors", errores);
 			 res=  newjSON.toString();
-			}
+		}
 		 }
 		 else
 		 {
 			 JSONObject newjSON= new JSONObject();
 			 newjSON.put("status", "JSON incorrecto");
 			 res=  newjSON.toString();
-		 } 
-		 
+		 }		 
 		return res;
 		//return test;
 	}
@@ -148,6 +147,7 @@ public class Data {
             sentencia = baseDatos.getConexion().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             resultado = sentencia.executeQuery(sql);
             baseDatos.getConexion().commit();
+            baseDatos.getConexion().close();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -280,6 +280,7 @@ public class Data {
 	{		 
 		Boolean a=true;
 		String strxml="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
+        strxml=strxml.concat("<servicioIntegralXML>");
 		ResultSet resultado = null;
 		JSONObject jsonObject = new JSONObject(param); 
 		jsonObject = jsonObject.getJSONObject("request");
@@ -293,6 +294,7 @@ public class Data {
 		strxml=strxml.concat(xml);
 		xml=XML.toString(matJs,"matriculaXML");
 		strxml=strxml.concat(xml); 
+		strxml=strxml.concat("</servicioIntegralXML>");
 		//validar si existe
 		
 		
