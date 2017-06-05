@@ -148,7 +148,8 @@ public class Data {
 	//ejecutar select
 	private ResultSet consultar(String sql) {
         ResultSet resultado = null;
-        try {
+        try 
+        {
         	DBOracle baseDatos = new DBOracle();
 			baseDatos.conectar();
         	Statement sentencia;
@@ -200,9 +201,9 @@ public class Data {
 				idUser=resultado.getInt("USR_ID");
 				//actualizar contador
 				ejecutar("update ECNR_OW.ecnr_contadores set cnt_contador = " + idUser + " where cnt_tabla='USUARIOS'");
-							
 			}
-		} catch (SQLException e) 
+		} 
+		catch (SQLException e) 
 		{
 			// TODO Auto-generated catch block
 			errores+=" * Error al crear usuario";
