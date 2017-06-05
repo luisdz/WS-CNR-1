@@ -92,26 +92,35 @@ public class Data {
 			res= "" + idU;//response
 			String idSol = jsonObjectGlobal.get("id").toString();
 			JSONObject newjSON= new JSONObject();
-			newjSON.put("id", idSol);
-			newjSON.put("idPresentacion", idP);
 			newjSON.put("status", "recieved");
+			newjSON.put("numPresentacion", idP);//pendiente getNumPresentacion
+			newjSON.put("mensaje", " ");
 			res=  newjSON.toString();
 		}
 		catch (Exception e)
 		{
+			
 			 errores+= e;
 			 JSONObject newjSON= new JSONObject();
-			 newjSON.put("status", "error de ejecucion");
-			 newjSON.put("errors", errores);
+			 newjSON.put("status", "error");
+			 newjSON.put("numPresentacion", "0");
+			 newjSON.put("mensaje", errores);
 			 res=  newjSON.toString();
+			 try{					
+				}
+				catch(Exception e2)
+				{					
+				}
 		}
-		 }
-		 else
-		 {
+		}
+		else
+		{
 			 JSONObject newjSON= new JSONObject();
-			 newjSON.put("status", "JSON incorrecto");
+			 newjSON.put("status", "error");
+			 newjSON.put("numPresentacion", "0");
+			 newjSON.put("mensaje", "JSON invalido");
 			 res=  newjSON.toString();
-		 }		 
+		}		 
 		return res;
 		//return test;
 	}	
@@ -128,7 +137,8 @@ public class Data {
 	            baseDatos.getConexion().commit();
 	            sentencia.close();
 			}
-			catch(SQLException e){
+			catch(SQLException e)
+			{
 				e.printStackTrace();
 				return "Error";
 			}
@@ -160,9 +170,9 @@ public class Data {
 		//validar si existe
 		resultado=consultar("select count(*) as c from ECNR_OW.ecnr_usuarios where usr_usuario= '" + correo + "'");		
 		try { 
-			resultado.next();
-			int c=resultado.getInt("c");
-			if(resultado.getInt("c") > 0)
+				resultado.next();
+				int c=resultado.getInt("c");
+				if(resultado.getInt("c") > 0)
 			{
 				resultado=consultar("select USR_ID  from ECNR_OW.ecnr_usuarios where usr_usuario= '" + correo + "'");		
 				resultado.next();
@@ -264,12 +274,8 @@ public class Data {
 			idpre=id;			
 		}
 		catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			
-		}
-		
-		
+			e.printStackTrace();			
+		}		
 		return idpre;
 	}
 	
@@ -339,8 +345,7 @@ public class Data {
 		JSONArray pagosJA = jsonObject.getJSONObject("request").getJSONArray("payments");
 		JSONArray docsJA = jsonObject.getJSONObject("request").getJSONArray("documentUploads");
 		List<BufferedImage> images = new ArrayList<BufferedImage>(); 
-		String miempresa="https://roxana1-els.eregistrations.org";
-		
+		String miempresa="https://roxana1-els.eregistrations.org";//cambiar segun el port a utilizar		
 		if(pagosJA.length()>0)
 		{
 			for (int i = 0; i <  pagosJA.length(); i++) 
@@ -369,8 +374,7 @@ public class Data {
 				        if (ind > 0) 
 				        {
 				            extension = url.getFile().substring(ind+1);
-				        }
-				        
+				        }				        
 				        if(extension.toLowerCase().equals("pdf"))
 				        {					        	 
 				        	PDDocument pdf = new PDDocument();
@@ -380,32 +384,27 @@ public class Data {
 				            {
 				                PDPage page = (PDPage) pdf.getDocumentCatalog().getAllPages().get(i);
 				                BufferedImage imageP; 
-				                try {
+				                try 
+				                {
 				                  imageP = page.convertToImage(BufferedImage.TYPE_INT_RGB, 288); //works
-//				                    image = page.convertToImage(BufferedImage.TYPE_INT_RGB, 300); // does not work
+//				                  image = page.convertToImage(BufferedImage.TYPE_INT_RGB, 300); // does not work				                  
+				                  images.add(imageP);						         
 				                  
-				                	  images.add(imageP);						         
-				                  
-				                } catch (IOException e) {
-				                	
+				                } catch (IOException e) 
+				                {				                	
 				                    e.printStackTrace();
 				                }
-				            }
-				        	
-				        	
+				            }		        	
 				        }
 				        System.out.println(extension + "****************4");
 				        if(extension.toLowerCase().equals("jpg") || extension.toLowerCase().equals("jpeg") || extension.toLowerCase().equals("png") )
 				        {
-				        	System.out.println(url + "****************5");
-				        	 
-				        		images.add(ImageIO.read(url));				        	
+				        	images.add(ImageIO.read(url));				        	
 				        }
 				        if(extension.toLowerCase().equals("tiff"))
 				        {
 				        	images.add(ImageIO.read(url));		    		
-				        }
-						
+				        }						
 					} 
 					
 				}
@@ -473,14 +472,10 @@ public class Data {
 					        {
 					        	 images.add(ImageIO.read(url));
 					    		
-					        }
-					       
-							
-						}			
-						
+					        }							
+						}						
 					}
-				 }
-				
+				 }				
 			}
 		}
 		
@@ -503,8 +498,7 @@ public class Data {
         param[0] = builder.build();
         TIFFTweaker.writeMultipageTIFF(rout, param, imagenes);
         rout.close();
-        fos.close();
-		
+        fos.close();		
 		resultado=consultar("select CNT_VALOR as c from ECNR_OW.contador where cnt_nombre='ANE_ID'");		
 		resultado.next();
 		int id=resultado.getInt("C");
@@ -519,15 +513,9 @@ public class Data {
 				a=false;
 			}
 		}
-		//insertar anexo		
-        		
+		//insertar anexo        		
 		PreparedStatement pstmt = baseDatos.getConexion().prepareStatement("insert into ECNR_OW.ecnr_pre_anexo(ane_id,pre_id,tan_id,ane_archivo,usu_crea,fec_crea) values (?, ?, ?, ?, ?, CURRENT_DATE)");
-		 		 
 		InputStream in = new FileInputStream("C://Temp//a.tiff");
-		try{
-			FileUtils.cleanDirectory(new File("C://Temp//"));
-		}
-		catch(Exception e){}
 		pstmt.setInt(1, id);//id anexo
 		pstmt.setInt(2, idp);//id presentacion
 		int tan=9;
@@ -541,14 +529,11 @@ public class Data {
 		pstmt.executeUpdate();
 		baseDatos.getConexion().commit();		
 		//actualizar contador
-		ejecutar("update ECNR_OW.contador set cnt_valor = " + id + " where cnt_nombre='ANE_ID'");
-		
+		ejecutar("update ECNR_OW.contador set cnt_valor = " + id + " where cnt_nombre='ANE_ID'");		
 		return idanexo;
 	}
 	
-	//probar conexion
-	 
- 	 
+
  	//validar formato json 
 	private boolean isJSONValid(String test) {
 	    try {
@@ -563,7 +548,7 @@ public class Data {
 	    return true;
 	}
 		
-	//genera formato de informacion general para pre_forma
+	//genera formato xml de informacion general para pre_forma
 	private JSONObject generalXML(String p) throws JSONException, IOException
 	{	
 
@@ -741,7 +726,7 @@ public class Data {
 		return jsonObjectRes;
 	}
 	
-	//genera formato de informacion de matricula para pre_forma
+	//genera formato xml de informacion de matricula para pre_forma
 	private JSONObject matXML(String p)
 	{
 		JSONObject jsonObject = new JSONObject(p);
@@ -857,7 +842,7 @@ public class Data {
 		return jsonObjectRes;
 	}
 	
-	//genera formato de informacion de consticion para pre_forma
+	//genera formato xml de informacion de consticion para pre_forma
 	private JSONObject constitucionXML(String p)
 	{
 		JSONObject jsonObjectRes = new JSONObject();
@@ -1056,7 +1041,7 @@ public class Data {
 		return jsonObjectRes;
 	}
 
-	//genera formato de informacion de consticion para pre_forma ***PENDIENTE***
+	//genera formato xml de informacion de consticion para pre_forma ***PENDIENTE***
 	private JSONObject balXML(String p)
 	{
 		JSONObject jsonObject = new JSONObject();
