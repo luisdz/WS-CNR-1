@@ -170,7 +170,8 @@ public class Data {
 		ResultSet resultado = null;
 		//validar si existe
 		resultado=consultar("select count(*) as c from ECNR_OW.ecnr_usuarios where usr_usuario= '" + correo + "'");		
-		try { 
+		try 
+		{ 
 				resultado.next();
 				int c=resultado.getInt("c");
 				if(resultado.getInt("c") > 0)
@@ -211,7 +212,7 @@ public class Data {
 		}
 		return idUser;
 	}
-	
+   
 	//crear presentacion
 	private int crearPresentacion(String param, int idU,String serv)
 	{
