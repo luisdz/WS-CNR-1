@@ -683,9 +683,14 @@ public class Data {
 			JSONObject asistJ = new JSONObject();
 			for (int i = 0; i <  asist.length(); i++) 
 			 {
+				if(asist.getJSONObject(i).has("isCompanyLegalRepresentative"))
+				{
+				
+				
 				if(asist.getJSONObject(i).getBoolean("isCompanyLegalRepresentative"))
 				{
 					asistJ=asist.getJSONObject(i);
+				}
 				}
 			 }
 			
@@ -877,7 +882,7 @@ public class Data {
 		}
 		jsonObjectRes.append("departamento","0");
 		jsonObjectRes.append("municipio","0");
-		jsonObjectRes.append("fechaEscritura","0");				
+		jsonObjectRes.append("fechaEscritura",jsonData.getString("registrationDate"));		 
 		jsonObjectRes.append("pais",jsonData.getJSONObject("registrationCountry").getString("code"));
 		//tipo administracion
 		String ta=jsonData.getJSONObject("managementType").getString("code");
@@ -888,7 +893,8 @@ public class Data {
 		}
 		jsonObjectRes.append("tipoAdministracion",tar);
 		jsonObjectRes.append("periodoAdministracion",jsonData.getString("managementDuration"));
-		jsonObjectRes.append("miembrosAdministracion",jsonData.getJSONArray("representatives").length());
+		//jsonObjectRes.append("miembrosAdministracion",jsonData.getJSONArray("representatives").length());//old
+		jsonObjectRes.append("miembrosAdministracion",jsonData.getString("amountOfDirectors"));//new
 		jsonObjectRes.append("capitalSocial",jsonData.getDouble("shareCapital"));
 		//jsonObjectRes.append("capitalMinimo",jsonData.getString("user"));
 		
@@ -900,6 +906,10 @@ public class Data {
 	 	ArrayList<JSONObject> list = new ArrayList<JSONObject>();  
 		for (int i = 0; i <  asist.length(); i++) 
 		 {
+			if(asist.getJSONObject(i).has("isCompanyLegalRepresentative"))
+			{
+				
+			
 			if(asist.getJSONObject(i).getBoolean("isCompanyLegalRepresentative"))
 			{
 				JSONObject repre=new JSONObject();
@@ -941,60 +951,67 @@ public class Data {
 					repre.put("cargo", asistJ.getString("legalRepresentativePosition"));
 				}
 				jsonObjectRes.append("representateLegal", repre);
-			}	
-			       
-				 	JSONObject repre=new JSONObject();
-					asistJ=asist.getJSONObject(i);
-					repre.put("primerNombre", asistJ.getString("firstName"));
-					if(asistJ.has("otherNames"))
-					{
-						repre.put("otrosNombres", asistJ.getString("otherNames"));
-					} 
-					repre.put("primerApellido", asistJ.getString("lastName"));
-					if(asistJ.has("otherLastNames"))
-					{
-						repre.put("otrosApellidos", asistJ.getString("otherLastNames"));
-					} 
-					if(asistJ.has("alias"))
-					{
-						repre.put("conocidoPor", asistJ.getString("alias"));
-					} 
-					repre.put("tipoDoc", asistJ.getJSONObject("idDocumentsChoice").get("code"));
-					if(asistJ.has("residencyCardNumber"))
-					{
-						repre.put("numDoc", asistJ.getString("residencyCardNumber"));
-					}
-					else if(asistJ.has("passportNumber"))
-					{
-						repre.put("numDoc", asistJ.getString("passportNumber"));
-					}
-					else if(asistJ.has("duiNumber"))
-					{
-						repre.put("numDoc", asistJ.getString("duiNumber"));
-					}
-					else
-					{
-						repre.put("numDoc","0");
-					}
-					repre.put("nit", asistJ.getString("nitNumber"));
-					if(asistJ.has("legalRepresentativePosition"))
-					{
-						repre.put("cargo", asistJ.getString("legalRepresentativePosition"));
-					}
-					if(asistJ.has("sharesAmount"))
-					{
-						repre.put("cantidadAcciones", asistJ.getInt("sharesAmount"));
-					}
-					//jsonObjectRes.append("socioNatural", repre); 
-					repres.put(repre);
-					list.add(repre);
+			 }
+			}
+			       if(asist.getJSONObject(i).has("isMemberOfAdministration"))
+			       {
+			    	   if(asist.getJSONObject(i).getBoolean("isMemberOfAdministration"))
+				       {
+			    		   JSONObject repre=new JSONObject();//miembros de la administracion 
+							asistJ=asist.getJSONObject(i);
+							repre.put("primerNombre", asistJ.getString("firstName"));
+							if(asistJ.has("otherNames"))
+							{
+								repre.put("otrosNombres", asistJ.getString("otherNames"));
+							} 
+							repre.put("primerApellido", asistJ.getString("lastName"));
+							if(asistJ.has("otherLastNames"))
+							{
+								repre.put("otrosApellidos", asistJ.getString("otherLastNames"));
+							} 
+							if(asistJ.has("alias"))
+							{
+								repre.put("conocidoPor", asistJ.getString("alias"));
+							} 
+							repre.put("tipoDoc", asistJ.getJSONObject("idDocumentsChoice").get("code"));
+							if(asistJ.has("residencyCardNumber"))
+							{
+								repre.put("numDoc", asistJ.getString("residencyCardNumber"));
+							}
+							else if(asistJ.has("passportNumber"))
+							{
+								repre.put("numDoc", asistJ.getString("passportNumber"));
+							}
+							else if(asistJ.has("duiNumber"))
+							{
+								repre.put("numDoc", asistJ.getString("duiNumber"));
+							}
+							else
+							{
+								repre.put("numDoc","0");
+							}
+							repre.put("nit", asistJ.getString("nitNumber"));
+							if(asistJ.has("legalRepresentativePosition"))
+							{
+								repre.put("cargo", asistJ.getString("legalRepresentativePosition"));
+							}
+							if(asistJ.has("sharesAmount"))
+							{
+								repre.put("cantidadAcciones", asistJ.getInt("sharesAmount"));
+							}
+							//jsonObjectRes.append("socioNatural", repre); 
+							repres.put(repre);
+							list.add(repre);
+				       }  
+			       }
+				 	
 		 }
 		if(repres.length() > 0)
 		{
-			jsonObjectRes.append("socioNatural", repres); 
+			jsonObjectRes.append("miembrosAdminsitracion", repres); 
 		}
 		
-		if(jsonData.has("partners"))
+		if(jsonData.has("partners"))//ya no iria
 		{
 			JSONArray jurid = jsonObject.getJSONObject("request").getJSONObject("data").getJSONArray("partners");
 			JSONObject juridJ = new JSONObject();
@@ -1026,8 +1043,7 @@ public class Data {
 				repre.put("denominacion", juridJ.getString("designation"));
 				repre.put("nit", juridJ.getString("nitNumber"));
 				repre.put("cantidadAcciones", juridJ.getInt("sharesAmount"));
-				jurds.put(repre);
-				
+				jurds.put(repre);				
 			 }
 			if(jurds.length() > 0)
 			{
