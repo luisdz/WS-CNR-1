@@ -15,6 +15,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -68,9 +72,17 @@ public class Data {
 		if(isJSONValid(param))
 		{
 		JSONObject jsonObjectGlobal = new JSONObject(param);
+		
 		String user = "miempresa.gob.sv";
 		try{
-			//user=jsonObjectGlobal.getString("user");
+			if(jsonObjectGlobal.getJSONObject("request").getJSONObject("data").getBoolean("isNotificationAddressSame"))
+			{
+				user = jsonObjectGlobal.getJSONObject("request").getJSONObject("data").getJSONObject("businessAddress").getString("personalEmail");
+			}
+			else
+			{
+				user = jsonObjectGlobal.getJSONObject("request").getJSONObject("data").getJSONObject("notificationAddress").getString("personalEmail");
+			}
 		}
 		catch(Exception e){
 			errores+="error al obtener user";
@@ -80,15 +92,15 @@ public class Data {
 		{ 
 			//crear usuario
 			int idU=1;
-			//idU=crearUser(user);  
+			idU=crearUser(user);  
 			int idP=0;
-		    //idP=crearPresentacion(param,idU,"002");
+		    idP=crearPresentacion(param,idU,"002");
 			System.out.println("presentacion");
-			//crearPreForma(param,idP,idU,"constitucionXML");
-			test=crearPreForma(param,0,idU,"constitucionXML"); 
-			//crearAnexo(idP, idU,"constitucion",param);//anexo constitucion
-			//crearAnexo(idP, idU,"matricula",param); //anexo matricula
-			//crearAnexo(idP, idU,"balance",param);	//anexo balance		
+			crearPreForma(param,idP,idU,"constitucionXML");
+			//test=crearPreForma(param,0,idU,"constitucionXML"); 
+			crearAnexo(idP, idU,"constitucion",param);//anexo constitucion
+			crearAnexo(idP, idU,"matricula",param); //anexo matricula
+			crearAnexo(idP, idU,"balance",param);	//anexo balance		
 			res= "" + idU;//response
 			String idSol = jsonObjectGlobal.get("id").toString();
 			JSONObject newjSON= new JSONObject();
@@ -106,11 +118,7 @@ public class Data {
 			 newjSON.put("numPresentacion", "0");
 			 newjSON.put("mensaje", errores);
 			 res=  newjSON.toString();
-			 try{					
-				}
-				catch(Exception e2)
-				{					
-				}
+			 
 		}
 		}
 		else
@@ -282,7 +290,7 @@ public class Data {
 	}
 	
 	//crear pre forma
-	private String crearPreForma(String param,int idpre, int idU, String titulo) throws JSONException, IOException
+	private int crearPreForma(String param,int idpre, int idU, String titulo) throws JSONException, IOException, ParseException
 	{		 
 		Boolean a=true;
 		String strxml="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
@@ -294,17 +302,22 @@ public class Data {
 		JSONObject genJs = generalXML(param);
 		JSONObject conJs = constitucionXML(param);
 		JSONObject matJs = matXML(param);
+		JSONObject balJs = balXML(param);
 		String xml = XML.toString(genJs,"generalXML");		
 		strxml=strxml.concat(xml);
 		xml=XML.toString(conJs,"constitucionXML");
 		strxml=strxml.concat(xml);
 		xml=XML.toString(matJs,"matriculaXML");
-		strxml=strxml.concat(xml); 
+		strxml=strxml.concat(xml);
+		xml=XML.toString(balJs,"balanceXML");
+		strxml=strxml.concat(xml);
 		strxml=strxml.concat("</servicioIntegralXML>");
+		
+		
 		//validar si existe
 		
 		
-		/*try
+		try
 		{
 			resultado=consultar("select CNT_VALOR as c from ECNR_OW.contador where cnt_nombre='FOR_ID'");		
 			resultado.next();
@@ -331,8 +344,9 @@ public class Data {
 		catch(Exception e)
 		{
 			int r=0;
-		}return idpre;*/
-		return strxml;
+		}
+		return idpre;
+		//return strxml;
 	}
 	
 	//crear anexos
@@ -361,6 +375,10 @@ public class Data {
 				if(tipo.equals("matricula"))
 				{
 					type="companyRegistration";					
+				}
+				if(tipo.equals("balance"))
+				{
+					type="initialBalance";
 				}
 				System.out.println( tipo +"****************1" + item.getString("code"));
 				if(item.getString("code").equals(type))
@@ -551,7 +569,7 @@ public class Data {
 	}
 		
 	//genera formato xml de informacion general para pre_forma
-	private JSONObject generalXML(String p) throws JSONException, IOException
+	private JSONObject generalXML(String p) throws JSONException, IOException, ParseException
 	{	
 
 		Catalogos catalogo= new Catalogos();
@@ -568,8 +586,11 @@ public class Data {
 				list.add(cod);  			
 			 }	
 		servObj.append("code", list);
-		jsonObjectRes.append("fechaIngreso",jsonObject.get("submittedTimestamp").toString());
-		jsonObjectRes.append("fechaAprovacion",jsonObject.get("submittedTimestamp").toString());
+		DateFormat format = new SimpleDateFormat("ddMMyyHHmmss");
+		Date date = format.parse(jsonObject.get("submittedTimestamp").toString());
+		jsonObjectRes.append("fechaIngreso",date);
+		date = format.parse(jsonObject.getJSONObject("processingSteps").getJSONObject("revision").get("statusTimestamp").toString());
+		jsonObjectRes.append("fechaAprovacion",date);
 		jsonObjectRes.append("emailSol","miempresa.gob.sv"); //jsonObject.getString("user"));
 		jsonObjectRes.append("servicios",servObj);
 		JSONObject dirNJson = new JSONObject();
@@ -581,14 +602,26 @@ public class Data {
 			{
 				dirNJson.append("edificio", dir.getString("building"));
 			}
+			else
+			{
+				dirNJson.append("edificio", " ");
+			}
 			if(dir.has("house"))
 			{
 				dirNJson.append("casa", dir.getString("house"));
+			}
+			else
+			{
+				dirNJson.append("casa", " ");
 			}
 			dirNJson.append("colonia", dir.getString("borough"));
 			if(dir.has("complement"))
 			{
 				dirNJson.append("complemento", dir.getString("complement"));
+			}
+			else
+			{
+				dirNJson.append("complemento", " ");
 			}
 			//String code=catalogo.getDepartamento(dir.getString("province"));
 			String code=catalogo.getDepartamento("provinceSanSalvador");
@@ -599,11 +632,19 @@ public class Data {
 			if(dir.has("mobile"))
 			{
 				dirNJson.append("celular", dir.getString("mobile"));
-			}			 
+			}
+			else
+			{
+				dirNJson.append("celular", " ");
+			}
 			if(dir.has("fax"))
 			{
 				dirNJson.append("fax", dir.getString("fax"));
-			}			 
+			}
+			else
+			{
+				dirNJson.append("fax", " ");
+			}
 			dirNJson.append("email", dir.getString("personalEmail"));  
 			jsonObjectRes.append("direccionNotificacion",dirNJson);
 		}
@@ -615,14 +656,26 @@ public class Data {
 			{
 				dirNJson.append("edificio", dir.getString("building"));
 			}
+			else
+			{
+				dirNJson.append("edificio", " ");
+			}
 			if(dir.has("house"))
 			{
 				dirNJson.append("casa", dir.getString("house"));
+			}
+			else
+			{
+				dirNJson.append("casa", " ");
 			}
 			dirNJson.append("colonia", dir.getString("borough"));
 			if(dir.has("complement"))
 			{
 				dirNJson.append("complemento", dir.getString("complement"));
+			}
+			else
+			{
+				dirNJson.append("complemento", " ");
 			}
 			dirNJson.append("departamento", dir.getString("province"));
 			dirNJson.append("municipio", dir.getString("town"));
@@ -630,11 +683,19 @@ public class Data {
 			if(dir.has("mobile"))
 			{
 				dirNJson.append("celular", dir.getString("mobile"));
-			}			 
+			}
+			else
+			{
+				dirNJson.append("celular", " ");
+			}
 			if(dir.has("fax"))
 			{
 				dirNJson.append("fax", dir.getString("fax"));
-			}			 
+			}
+			else
+			{
+				dirNJson.append("fax", " ");
+			}
 			dirNJson.append("email", dir.getString("personalEmail"));
 			jsonObjectRes.put("direccionNotificacion",dirNJson);
 		}
@@ -646,16 +707,29 @@ public class Data {
 			if(asist.getJSONObject(0).has("otherNames"))
 			{
 				assistJson.put("otrosNombres", asist.getJSONObject(0).getString("otherNames"));
-			} 
+			}
+			else
+			{
+				assistJson.put("otrosNombres", " ");
+			}
 			assistJson.put("primerApellido", asist.getJSONObject(0).getString("lastName"));
 			if(asist.getJSONObject(0).has("otherLastNames"))
 			{
 				assistJson.put("otrosApellidos", asist.getJSONObject(0).getString("otherLastNames"));
 			} 
+			else
+			{
+				assistJson.put("otrosApellidos", " ");
+			}
 			if(asist.getJSONObject(0).has("alias"))
 			{
 				assistJson.put("conocidoPor", asist.getJSONObject(0).getString("alias"));
-			} 
+			}
+			else
+			{
+				assistJson.put("conocidoPor", " ");
+			}
+			 
 			assistJson.put("tipoDoc", asist.getJSONObject(0).getJSONObject("idDocumentsChoice").getString("code"));
 			if(asist.getJSONObject(0).has("residencyCardNumber"))
 			{
@@ -698,16 +772,28 @@ public class Data {
 			if(asistJ.has("otherNames"))
 			{
 				assistJson.put("otrosNombres", asistJ.getString("otherNames"));
-			} 
+			}
+			else
+			{
+				assistJson.put("otrosNombres", " ");
+			}
 			assistJson.put("primerApellido", asistJ.getString("lastName"));
 			if(asistJ.has("otherLastNames"))
 			{
 				assistJson.put("otrosApellidos", asistJ.getString("otherLastNames"));
-			} 
+			}
+			else
+			{
+				assistJson.put("otrosApellidos", " ");
+			}
 			if(asistJ.has("alias"))
 			{
 				assistJson.put("conocidoPor", asistJ.getString("alias"));
-			} 
+			}
+			else
+			{
+				assistJson.put("conocidoPor", " ");
+			}
 			assistJson.put("tipoDoc", asistJ.getJSONObject("idDocumentsChoice").get("code"));
 			if(asistJ.has("residencyCardNumber"))
 			{
@@ -764,24 +850,44 @@ public class Data {
 		{
 			dirNJson.append("edificio", dir.getString("building"));
 		}
+		else
+		{
+			dirNJson.append("edificio", " ");
+		}
 		if(dir.has("house"))
 		{
 			dirNJson.append("casa", dir.getString("house"));
+		}
+		else
+		{
+			dirNJson.append("casa", " ");
 		}
 		dirNJson.append("colonia", dir.getString("borough"));
 		if(dir.has("complement"))
 		{
 			dirNJson.append("complemento", dir.getString("complement"));
-		} 
+		}
+		else
+		{
+			dirNJson.append("complemento", " ");
+		}
 		dirNJson.append("telefono", dir.getString("phone")); 
 		if(dir.has("mobile"))
 		{
 			dirNJson.append("celular", dir.getString("mobile"));
-		}			 
+		}
+		else
+		{
+			dirNJson.append("celular", " ");
+		}
 		if(dir.has("fax"))
 		{
 			dirNJson.append("fax", dir.getString("fax"));
-		}			 
+		}
+		else
+		{
+			dirNJson.append("fax", " ");
+		}
 		dirNJson.append("email", dir.getString("personalEmail"));  
 		jsonObjectRes.append("direccion",dirNJson);
 		
@@ -806,9 +912,7 @@ public class Data {
 						sucursal.append("codigoActividad",list);
 					}
 					else
-					{
-						
-					}
+					{}
 					//direccion
 					JSONObject sucDirJ=item.getJSONObject("address");
 					JSONObject dirSJson = new JSONObject();
@@ -817,24 +921,44 @@ public class Data {
 					{
 						dirSJson.append("edificio", sucDirJ.getString("building"));
 					}
+					else
+					{
+						dirSJson.append("edificio", " ");
+					}
 					if(sucDirJ.has("house"))
 					{
 						dirSJson.append("casa", sucDirJ.getString("house"));
+					}
+					else
+					{
+						dirSJson.append("casa", " ");
 					}
 					dirSJson.append("colonia", sucDirJ.getString("borough"));
 					if(sucDirJ.has("complement"))
 					{
 						dirSJson.append("complemento", sucDirJ.getString("complement"));
-					} 
+					}
+					else
+					{
+						dirSJson.append("complemento", " ");
+					}
 					dirSJson.append("telefono", sucDirJ.getString("phone")); 
 					if(sucDirJ.has("mobile"))
 					{
 						dirSJson.append("celular", sucDirJ.getString("mobile"));
-					}			 
+					}
+					else
+					{
+						dirSJson.append("celular", " ");
+					}
 					if(sucDirJ.has("fax"))
 					{
 						dirSJson.append("fax", sucDirJ.getString("fax"));
-					}			 
+					}
+					else
+					{
+						dirSJson.append("fax"," ");
+					}
 					dirSJson.append("email", sucDirJ.getString("personalEmail"));  
 					sucursal.append("direccion",dirSJson);					
 					sucursales.put(sucursal);
@@ -844,7 +968,26 @@ public class Data {
 			}
 		}
 		
-		
+		try{
+			JSONArray pagos = jsonObject.getJSONObject("request").getJSONArray("payments");
+			
+			for (int i = 0; i <  pagos.length(); i++) 
+			 {
+				JSONObject item = pagos.getJSONObject(i); 
+				
+				if(item.getString("code").equals("companyRegistration"))
+				{
+					jsonObjectRes.append("numeroFactura", item.getJSONObject("data").getDouble("receiptAmount"));
+					jsonObjectRes.append("nombreNegocio", item.getJSONObject("data").getDouble("receiptNumber"));
+				}
+			 }
+		}
+		catch(Exception e)
+		{
+			jsonObjectRes.append("numeroFactura", "0");
+			jsonObjectRes.append("nombreNegocio", "0");
+			
+		}
 		
 		return jsonObjectRes;
 	}
@@ -879,6 +1022,10 @@ public class Data {
 		if(jsonData.has("abbreviation"))
 		{
 			jsonObjectRes.append("abreviatura",jsonData.getString("abbreviation"));
+		}
+		else
+		{
+			jsonObjectRes.append("abreviatura"," ");
 		}
 		jsonObjectRes.append("departamento","0");
 		jsonObjectRes.append("municipio","0");
@@ -919,15 +1066,27 @@ public class Data {
 				{
 					repre.put("otrosNombres", asistJ.getString("otherNames"));
 				} 
+				else
+				{
+					repre.put("otrosNombres", " ");
+				}
 				repre.put("primerApellido", asistJ.getString("lastName"));
 				if(asistJ.has("otherLastNames"))
 				{
 					repre.put("otrosApellidos", asistJ.getString("otherLastNames"));
-				} 
+				}
+				else
+				{
+					repre.put("otrosApellidos", " ");
+				}
 				if(asistJ.has("alias"))
 				{
 					repre.put("conocidoPor", asistJ.getString("alias"));
-				} 
+				}
+				else
+				{
+					repre.put("conocidoPor", " ");
+				}
 				repre.put("tipoDoc", asistJ.getJSONObject("idDocumentsChoice").get("code"));
 				if(asistJ.has("residencyCardNumber"))
 				{
@@ -950,6 +1109,10 @@ public class Data {
 				{
 					repre.put("cargo", asistJ.getString("legalRepresentativePosition"));
 				}
+				else
+				{
+					repre.put("cargo", " ");
+				}
 				jsonObjectRes.append("representateLegal", repre);
 			 }
 			}
@@ -963,17 +1126,38 @@ public class Data {
 							if(asistJ.has("otherNames"))
 							{
 								repre.put("otrosNombres", asistJ.getString("otherNames"));
-							} 
+							}
+							else
+							{
+								repre.put("otrosNombres", " ");
+							}
+							
 							repre.put("primerApellido", asistJ.getString("lastName"));
 							if(asistJ.has("otherLastNames"))
 							{
 								repre.put("otrosApellidos", asistJ.getString("otherLastNames"));
-							} 
+							}
+							else
+							{
+								repre.put("otrosApellidos", " ");
+							}
 							if(asistJ.has("alias"))
 							{
 								repre.put("conocidoPor", asistJ.getString("alias"));
-							} 
-							repre.put("tipoDoc", asistJ.getJSONObject("idDocumentsChoice").get("code"));
+							}
+							else
+							{
+								repre.put("conocidoPor", " ");
+							}
+							if( asistJ.has("idDocumentsChoice"))
+							{
+								repre.put("tipoDoc", asistJ.getJSONObject("idDocumentsChoice").get("code"));
+							}
+							else
+							{
+								repre.put("tipoDoc", "0");
+							}
+							
 							if(asistJ.has("residencyCardNumber"))
 							{
 								repre.put("numDoc", asistJ.getString("residencyCardNumber"));
@@ -995,9 +1179,17 @@ public class Data {
 							{
 								repre.put("cargo", asistJ.getString("legalRepresentativePosition"));
 							}
+							else
+							{
+								repre.put("cargo", " ");
+							}
 							if(asistJ.has("sharesAmount"))
 							{
 								repre.put("cantidadAcciones", asistJ.getInt("sharesAmount"));
+							}
+							else
+							{
+								repre.put("cantidadAcciones", " ");
 							}
 							//jsonObjectRes.append("socioNatural", repre); 
 							repres.put(repre);
@@ -1053,7 +1245,25 @@ public class Data {
 		}
 		
 		
-		
+		try{
+			JSONArray pagos = jsonObject.getJSONObject("request").getJSONArray("payments");
+			
+			for (int i = 0; i <  pagos.length(); i++) 
+			 {
+				JSONObject item = pagos.getJSONObject(i); 
+				
+				if(item.getString("code").equals("companyIncorporationHq"))
+				{
+					jsonObjectRes.append("numeroFactura", item.getJSONObject("data").getDouble("receiptAmount"));
+					jsonObjectRes.append("nombreNegocio", item.getJSONObject("data").getDouble("receiptNumber"));
+				}
+			 }
+		}
+		catch(Exception e)
+		{ 
+			jsonObjectRes.append("numeroFactura", "0");
+			jsonObjectRes.append("nombreNegocio", "0");
+		}
 		
 		
 		return jsonObjectRes;
@@ -1062,8 +1272,40 @@ public class Data {
 	//genera formato xml de informacion de consticion para pre_forma ***PENDIENTE***
 	private JSONObject balXML(String p)
 	{
-		JSONObject jsonObject = new JSONObject();
-		return jsonObject;
+		JSONObject jsonObjectRes = new JSONObject();
+		JSONObject jsonObject = new JSONObject(p);
+		JSONObject jsonData = jsonObject.getJSONObject("request").getJSONObject("data");
+		try{
+			String dateBal = jsonData.getString("dateOfBalance"); 
+			jsonObjectRes.append("fechaBalance",dateBal);		
+			String totAct = jsonData.getString("shareCapital");
+			jsonObjectRes.append("totalActivo",dateBal);
+		}
+		catch(Exception e){			
+		}		 
+		
+		
+		try{
+			JSONArray pagos = jsonObject.getJSONObject("request").getJSONArray("payments");
+			
+			for (int i = 0; i <  pagos.length(); i++) 
+			 {
+				JSONObject item = pagos.getJSONObject(i); 
+				
+				if(item.getString("code").equals("initialBalance"))
+				{
+					jsonObjectRes.append("numeroFactura", item.getJSONObject("data").getDouble("receiptAmount"));
+					jsonObjectRes.append("nombreNegocio", item.getJSONObject("data").getDouble("receiptNumber"));
+				}
+			 }
+		}
+		catch(Exception e)
+		{ 
+			jsonObjectRes.append("numeroFactura", "0");
+			jsonObjectRes.append("nombreNegocio", "0");
+		}
+		
+		return jsonObjectRes;
 	}
 
 
