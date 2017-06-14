@@ -92,15 +92,15 @@ public class Data {
 		{ 
 			//crear usuario
 			int idU=1;
-			idU=crearUser(user);  
+			//idU=crearUser(user);  
 			int idP=0;
-		    idP=crearPresentacion(param,idU,"002");
-			System.out.println("presentacion");
+		    //idP=crearPresentacion(param,idU,"002");
+			//System.out.println("presentacion");
 			crearPreForma(param,idP,idU,"constitucionXML");
 			//test=crearPreForma(param,0,idU,"constitucionXML"); 
-			crearAnexo(idP, idU,"constitucion",param);//anexo constitucion
-			crearAnexo(idP, idU,"matricula",param); //anexo matricula
-			crearAnexo(idP, idU,"balance",param);	//anexo balance		
+			//crearAnexo(idP, idU,"constitucion",param);//anexo constitucion
+			//crearAnexo(idP, idU,"matricula",param); //anexo matricula
+			//crearAnexo(idP, idU,"balance",param);	//anexo balance		
 			res= "" + idU;//response
 			String idSol = jsonObjectGlobal.get("id").toString();
 			JSONObject newjSON= new JSONObject();
@@ -222,9 +222,10 @@ public class Data {
 	}
    
 	//crear presentacion
-	private int crearPresentacion(String param, int idU,String serv)
+	private int crearPresentacion(String param, int idU,String serv) throws IOException
 	{
 		int idpre=0;
+		Catalogos catalogo= new Catalogos();
 		String cod="0000";
 		String tipo="02";
 		JSONObject jsonObject = new JSONObject(param); 
@@ -273,11 +274,20 @@ public class Data {
 			resultado.next();
 			int corrNumPres= resultado.getInt("C") + 1;
 			String formcorr = String.format("%06d", corrNumPres);
+			String depto="06";
+			try{
+				depto= jsonObject.getJSONObject("request").getJSONObject("data").getJSONObject("preHomeTown").getString("code");
+				depto=catalogo.getDepartamento(depto);
+			}
+			catch(Exception e)
+			{				
+			}
+			
 			//numPres= numPres + corrNumPres;
 			//insertar presentacion
 			ejecutar( "insert into ECNR_OW.ecnr_presentaciones(pre_id,pre_numero,sis_codigo,sus_codigo,cse_tipo,\n"
 					 + "cse_codigo,pre_depto,pre_express,pre_envio_postal,pre_estado,pre_fecha_pres,usr_id,fec_crea)\n" 
-				  	 + "values (" + id + ", '" + numPres + formcorr + "','"+serv+"',1,'"+ tipo+"','"+cod+"','06','N','N',1,CURRENT_DATE,"+idU+",CURRENT_DATE)");
+				  	 + "values (" + id + ", '" + numPres + formcorr + "','"+serv+"',1,'"+ tipo+"','"+cod+"','"+depto + "','N','N',1,CURRENT_DATE,"+idU+",CURRENT_DATE)");
 			//actualizar contador			
 			ejecutar("update ECNR_OW.contador set cnt_valor = " + id + " where cnt_nombre='PRE_ID'");
 			ejecutar("update ECNR_OW.contador set cnt_valor = " + corrNumPres + " where cnt_nombre='"+ numPres +"'");
@@ -317,7 +327,7 @@ public class Data {
 		//validar si existe
 		
 		
-		try
+		/*try
 		{
 			resultado=consultar("select CNT_VALOR as c from ECNR_OW.contador where cnt_nombre='FOR_ID'");		
 			resultado.next();
@@ -344,7 +354,7 @@ public class Data {
 		catch(Exception e)
 		{
 			int r=0;
-		}
+		}*/
 		return idpre;
 		//return strxml;
 	}
@@ -624,9 +634,9 @@ public class Data {
 				dirNJson.append("complemento", " ");
 			}
 			//String code=catalogo.getDepartamento(dir.getString("province"));
-			String code=catalogo.getDepartamento("provinceSanSalvador");
+			String code=catalogo.getDepartamento(dir.getJSONObject("province").getString("code"));
 			dirNJson.append("departamento", code); 
-			code=catalogo.getMunicipio("townApaneca");
+			code=catalogo.getMunicipio(dir.getJSONObject("town").getString("code"));
 			dirNJson.append("municipio", code); 
 			dirNJson.append("telefono", dir.getString("phone")); 
 			if(dir.has("mobile"))
@@ -677,8 +687,10 @@ public class Data {
 			{
 				dirNJson.append("complemento", " ");
 			}
-			dirNJson.append("departamento", dir.getString("province"));
-			dirNJson.append("municipio", dir.getString("town"));
+			String code=catalogo.getDepartamento(dir.getJSONObject("province").getString("code"));			
+			dirNJson.append("departamento", code);
+			code=catalogo.getMunicipio(dir.getJSONObject("town").getString("code"));			
+			dirNJson.append("municipio", code);
 			dirNJson.append("telefono", dir.getString("phone")); 
 			if(dir.has("mobile"))
 			{
@@ -820,8 +832,9 @@ public class Data {
 	}
 	
 	//genera formato xml de informacion de matricula para pre_forma
-	private JSONObject matXML(String p)
+	private JSONObject matXML(String p) throws JSONException, IOException
 	{
+		Catalogos catalogo = new Catalogos();
 		JSONObject jsonObject = new JSONObject(p);
 		JSONObject jsonObjectRes = new JSONObject();
 		JSONObject jsonData = jsonObject.getJSONObject("request").getJSONObject("data");
@@ -834,14 +847,23 @@ public class Data {
 		ArrayList<String> list = new ArrayList<String>();    
 		for (int i = 0; i <  jsonA.length(); i++) 
 			 {
-				String cod=jsonA.getJSONObject(i).getString("code");
+			String cod;
+			    if (jsonA.get(i) instanceof JSONObject) 
+			    { 
+			    	cod=(String)jsonA.getJSONObject(i).getString("code"); 
+			    }
+			    else
+			    {
+			    	cod=(String)jsonA.get(i); 
+			    }				
 				list.add(cod);  			
 			 }
-		jsonObjectRes.append("codigoActividad",list);
-		
+		jsonObjectRes.append("codigoActividad",list);		
 		jsonObjectRes.append("nombreActividad",jsonData.getString("rangeOfActivity"));
-		jsonObjectRes.append("departamento",jsonDir.getString("province"));
-		jsonObjectRes.append("municipio",jsonDir.getString("town"));
+		String code=catalogo.getDepartamento(jsonDir.getJSONObject("province").getString("code"));			
+		jsonObjectRes.append("departamento",code);
+		code=catalogo.getMunicipio(jsonDir.getJSONObject("town").getString("code"));			
+		jsonObjectRes.append("municipio",code);
 		//direccion
 		JSONObject dir = jsonObject.getJSONObject("request").getJSONObject("data").getJSONObject("businessAddress");
 		JSONObject dirNJson = new JSONObject();
@@ -1041,7 +1063,14 @@ public class Data {
 		jsonObjectRes.append("tipoAdministracion",tar);
 		jsonObjectRes.append("periodoAdministracion",jsonData.getString("managementDuration"));
 		//jsonObjectRes.append("miembrosAdministracion",jsonData.getJSONArray("representatives").length());//old
-		jsonObjectRes.append("miembrosAdministracion",jsonData.getString("amountOfDirectors"));//new
+		if(jsonData.has("amountOfDirectors"))
+		{
+			jsonObjectRes.append("miembrosAdministracion",jsonData.getString("amountOfDirectors"));//new
+		}
+		else
+		{
+			jsonObjectRes.append("miembrosAdministracion","0");
+		}
 		jsonObjectRes.append("capitalSocial",jsonData.getDouble("shareCapital"));
 		//jsonObjectRes.append("capitalMinimo",jsonData.getString("user"));
 		
@@ -1203,7 +1232,7 @@ public class Data {
 			jsonObjectRes.append("miembrosAdminsitracion", repres); 
 		}
 		
-		if(jsonData.has("partners"))//ya no iria
+		/*if(jsonData.has("partners"))//ya no iria
 		{
 			JSONArray jurid = jsonObject.getJSONObject("request").getJSONObject("data").getJSONArray("partners");
 			JSONObject juridJ = new JSONObject();
@@ -1242,7 +1271,7 @@ public class Data {
 				jsonObjectRes.append("socioJuridico", jurds);
 			}		
 			
-		}
+		}*/
 		
 		
 		try{
