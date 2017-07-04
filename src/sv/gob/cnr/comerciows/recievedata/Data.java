@@ -75,16 +75,16 @@ public class Data {
 			try {
 				// crear usuario
 				int idU = 1;
-				idU = crearUser(user);
+				//idU = crearUser(user);
 				int idP = 0;
-				idP = crearPresentacion(param, idU, "002");
+				//idP = crearPresentacion(param, idU, "002");
 				System.out.println("presentacion");
 				String xml = crearPreForma(param, idP, idU, "constitucionXML");
 				// test=crearPreForma(param,0,idU,"constitucionXML");
-				crearAnexo(idP, idU, "constitucion", param);// anexo
+				//crearAnexo(idP, idU, "constitucion", param);// anexo
 															// constitucion
-				crearAnexo(idP, idU, "matricula", param); // anexo matricula
-				crearAnexo(idP, idU, "balance", param); // anexo balance
+				//crearAnexo(idP, idU, "matricula", param); // anexo matricula
+				//crearAnexo(idP, idU, "balance", param); // anexo balance
 
 				//PresentacionRC prc = new PresentacionRC();
 				String boleta = "0";//prc.crearPresentacion(idP, xml);
@@ -328,7 +328,7 @@ public class Data {
 		strxml = strxml.concat("</servicioIntegralXML>");
 
 		// validar si existe
-
+		/*	
 		try {
 			resultado = consultar("select CNT_VALOR as c from ECNR_OW.contador where cnt_nombre='FOR_ID'");
 			resultado.next();
@@ -386,7 +386,7 @@ public class Data {
 				e.printStackTrace();
 			}
 		}
-		//return idpre;
+		//return idpre;*/
 		return strxml;
 	}
 
@@ -529,6 +529,7 @@ public class Data {
 		}
 
 		FileOutputStream fos = new FileOutputStream("//app//ecnr//miempresa//tmp//images//a.tiff");
+		//FileOutputStream fos = new FileOutputStream("C://Temp//a.tiff");
 		System.out.println(" file saved in temp");
 		RandomAccessOutputStream rout = new FileCacheRandomAccessOutputStream(fos);
 		ImageParam.ImageParamBuilder builder = ImageParam.getBuilder();
@@ -538,8 +539,13 @@ public class Data {
 		builder.imageOptions(tiffOptions);
 		builder.colorType(ImageColorType.GRAY_SCALE);// .ditherMatrix(DitherMatrix.getBayer8x8Default()).applyDither(true).ditherMethod(DitherMethod.FLOYD_STEINBERG);
 		param[0] = builder.build();
-		TIFFTweaker.writeMultipageTIFF(rout, param, imagenes);
-		rout.close();
+		if((imagenes.length > 0))
+		{
+			TIFFTweaker.writeMultipageTIFF(rout, param, imagenes);
+			rout.close();
+		}
+		
+		
 		fos.close();
 		
 		
@@ -989,10 +995,23 @@ public class Data {
 		}
 		jsonObjectRes.append("pais", jsonData.getJSONObject("registrationCountry").getString("code"));
 		// tipo administracion
-		String ta = jsonData.getJSONObject("managementType").getString("code");
+		String ta = "";
+	    if(jsonData.has("managementType"))
+	    	{
+	    	jsonData.getJSONObject("managementType").getString("code");
+	    	}
+	    if(jsonData.has("directorsManagementType"))
+	    	{
+	    	jsonData.getJSONObject("directorsManagementType").getString("code");
+	    	}
+		
 		String tar = "AD";
 		if (ta.equals("board")) {
 			tar = "JD";
+		}
+		if(ta.equals("director"))
+		{
+			tar="DI";
 		}
 		jsonObjectRes.append("tipoAdministracion", tar);
 		jsonObjectRes.append("periodoAdministracion", jsonData.getString("managementDuration"));
